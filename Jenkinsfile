@@ -8,18 +8,26 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/vinaypavan022/jenkins.git'
+                git branch: '*/jenkintest', url: 'https://github.com/vinaypavan022/jenkins.git'
             }
         }
 
-        stage('Build') {
+        stage('PR Validation') {
+            when {
+                changeRequest()  // Only run this stage if it's a pull request
+            }
+            steps {
+                echo "PR detected: Validating code..."
+                sh './mvnw clean verify'
+            }
+        }
+
+        stage('Build & Push (Main Branch Only)') {
+            when {
+                branch 'main'  // Only deploy when merged to main
+            }
             steps {
                 sh './mvnw clean package'
-            }
-        }
-
-        stage('Docker Build & Push') {
-            steps {
                 sh "docker build -t $DOCKER_IMAGE ."
                 sh "docker login -u your-dockerhub-username -p your-dockerhub-password"
                 sh "docker push $DOCKER_IMAGE"
@@ -27,6 +35,9 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
+            when {
+                branch 'main'  // Deploy only if merged to main
+            }
             steps {
                 sh "kubectl apply -f k8s/deployment.yaml"
             }
@@ -35,10 +46,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment Successful!"
+            echo "✅ Build Successful!"
         }
         failure {
-            echo "❌ Deployment Failed!"
+            echo "❌ Build Failed!"
         }
     }
 }

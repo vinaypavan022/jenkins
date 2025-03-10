@@ -60,5 +60,11 @@ public class EntityController {
             return ResponseEntity.notFound().build();
         }
     }
+    
+    @GetMapping("/test")
+    public ResponseEntity<String> getTest() {
+        return ResponseEntity.ok("jenkins trigger");
+    }
+    
 }
 

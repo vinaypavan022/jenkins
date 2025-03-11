@@ -63,7 +63,7 @@ public class EntityController {
     
     @GetMapping("/test")
     public ResponseEntity<String> getTest() {
-        return ResponseEntity.ok("jenkins  trigger 1");
+        return ResponseEntity.ok("jenkins  trigger 11");
     }
     
 }
